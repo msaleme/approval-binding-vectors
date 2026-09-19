@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this corpus, please cite it as below."
+title: "Approval Binding Vectors (ABV): a protocol-neutral conformance corpus"
+abstract: >-
+  A protocol-neutral conformance corpus for one question: does this record prove
+  that what executed is what was approved? Defines six predicates (action,
+  arguments, dereference, freshness, authority, single use), twelve vectors of
+  which three are positive controls, a dependency-free reference checker, and an
+  isolation test demonstrating that each negative vector violates exactly its
+  designated predicate. Every predicate has an observed referent in a published
+  specification. Not peer-reviewed.
+version: "0.1.0"
+type: software
+authors:
+  - family-names: Saleme
+    given-names: Michael K.
+    orcid: "https://orcid.org/0009-0003-6736-1900"
+repository-code: "https://github.com/msaleme/approval-binding-vectors"
+license: MIT
+date-released: "2026-09-19"
+keywords:
+  - agent-security
+  - conformance-testing
+  - approval-binding
+  - authorization
+  - test-vectors

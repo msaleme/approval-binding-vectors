@@ -1,6 +1,8 @@
 # SHA-256 of every published file in this corpus.
 # Verify with: sha256sum -c SHA256SUMS
 
+862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793  ./.gitignore
+c4b9dd04f2043db27284d7da110dccd69d14b07b9e9eeede9918a964d7823fc1  ./CITATION.cff
 80de1ff0c3049a253fd3308f1a8358c82b580f72c83f696064943ad24611d50a  ./LICENSE
 7d980343bd8901b4358f7c2fa702286e8a12ec1d8f97d0d95bfe3fa77ee191bf  ./README.md
 bbbdf7f81f5e3ae8ca20b5716213a2110e64b21f7d2d1fe3af9af07a06e59274  ./SPEC.md

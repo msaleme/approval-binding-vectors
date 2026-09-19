@@ -70,8 +70,10 @@ def verify(rec: dict) -> tuple[str, str | None, str]:
     if isinstance(executions, dict):
         executions = [executions]
 
-    # P5 -- authority. Checked first: an unattested approval makes every later
-    # comparison a comparison against something nobody stands behind.
+    # P5 -- separate attester. Checked first: an unattested approval makes every
+    # later comparison a comparison against something nobody stands behind.
+    # NOTE: this establishes separateness + authentication over the scope. It does
+    # NOT establish that the attester was ENTITLED to approve this action.
     attestations = [a for a in rec.get("attestations", []) if a.get("claim") == "approval"]
     if not attestations:
         raise Reject("P5", "no approval attestation")

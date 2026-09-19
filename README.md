@@ -78,8 +78,8 @@ contribution. **A counterexample to isolation is a break even if the overall ver
 | **P2** | The approval's scope commits to the executed **argument bytes**. |
 | **P3** | Where content is named by **reference**, the commitment covers the dereferenced bytes, and the executor verifies and then consumes those same bytes. |
 | **P4** | The approval is **valid at the instant of execution**. |
-| **P5** | The approval is attested by a party **distinct from the executor**. |
-| **P6** | An approval authorizes **at most one** execution. |
+| **P5** | A **separate attester**: an approval attestation exists, its attester is not an executor, its key is known, and it verifies over the scope. Does **not** test authority for the scope. |
+| **P6** | An approval authorises **at most one** execution — a *profile choice*; reusable approvals can be legitimate. |
 
 Full definitions, canonical form, and the P2/P3 precedence rule: [`SPEC.md`](SPEC.md).
 Real-world referent for every predicate: [`profiles/OBSERVED.md`](profiles/OBSERVED.md).

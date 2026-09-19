@@ -8,6 +8,10 @@ It is not a protocol. It defines six predicates, a canonical form, a neutral rec
 for expressing test cases, and a vector set in which every negative case fails exactly one
 predicate — with positive controls that MUST be accepted.
 
+**ABV v0.1 is a single-use, separate-attester profile.** That is a choice, not a claim about
+what every approval must be. A protocol with legitimately reusable approvals, or one that
+places authority elsewhere, may decline P5 or P6 without being non-conforming to itself.
+
 ## Why this exists
 
 Agent protocols are converging on an approval record, and they are arriving at the same gap
@@ -29,8 +33,8 @@ negates exactly one.
 | **P2** | **Arguments.** The approval's scope commits to the executed argument bytes. | Approved tool A with args X, executed A with args Y. |
 | **P3** | **Dereference.** Where either side names content by reference, the commitment covers the *dereferenced bytes*, and the executor verifies and then consumes **those same bytes**. | Approval commits a URI; the bytes behind it change before execution. Or: the executor hashes, then re-fetches. |
 | **P4** | **Freshness.** The approval is valid at the instant of execution. | Approval correctly scoped, granted, and expired before it was used. |
-| **P5** | **Authority.** The approval is attested by a party distinct from the party that executes, and the verifier holds only the attesting party's public key. | A record in which the executor is also the only witness that it was approved. |
-| **P6** | **Single use.** An approval authorizes at most one execution. | One approval replayed for a second execution. |
+| **P5** | **Separate attester.** An approval attestation exists, its attester is **not** an executing party, its key is one the verifier holds, and the attestation verifies over the approval scope. | A record in which the executor is also the only witness that it was approved. |
+| **P6** | **Single use.** An approval authorises at most one execution. **This is a profile choice, not a universal requirement** — a standing budget or allowlist is legitimately reusable. ABV defines a *single-use* profile; a protocol with a different reuse bound is not thereby non-conforming to itself. | One approval replayed for a second execution. |
 
 P1 and P2 are separate on purpose. A joint commitment over `(action, arguments)` satisfies
 both, but splitting them lets an operator distinguish *someone approved a different tool*
@@ -39,6 +43,12 @@ incidents with different responses.
 
 P5 is the predicate most often absent. A record can satisfy P1–P4 completely and still be a
 document its own author wrote about itself.
+
+**P5 does not test authority for the scope.** It establishes that a *separate, authenticated*
+party attested the approval. It does **not** establish that that party was entitled to approve
+this action — entitlement is a policy question the record cannot answer on its own, and
+conflating the two would repeat the error this decomposition exists to avoid. A checker
+passing P5 has shown separateness and authentication, nothing more.
 
 ### Precedence between P2 and P3
 

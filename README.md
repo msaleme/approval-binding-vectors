@@ -117,6 +117,16 @@ for two reasons at once, which makes a checker look correct when it is only reje
 implementations copy the fixtures into their own test suites. A corpus nobody can legally
 vendor is a corpus nobody will reproduce.
 
+## Standing reproduction challenge
+
+A published, commit-pinned invitation to disagree with this corpus — what counts as a break,
+what a reproduction report needs, and what will and will not be claimed about your result:
+**[CHALLENGE.md](CHALLENGE.md)**.
+
+Short version: a reproducible disagreement with `check.py` or `isolation.py` is the single most
+useful thing you can send back. Negative-vector agreement alone is insufficient evidence of
+checker correctness — report `CTRL` results or do not report results.
+
 ## Status
 
 v0.1, 2026-09-19. Unreviewed by anyone other than its author — which, by its own argument,

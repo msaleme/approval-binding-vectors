@@ -11,6 +11,7 @@ vector       expected  naive says  caught?
   NEG-P5-01    reject    reject      yes
   NEG-P5-02    reject    reject      yes
   NEG-P6-01    reject    reject      yes
+  NEG-P6-02    reject    reject      yes
 
 naive checker MISSES 0: []
 predicates it silently fails: []

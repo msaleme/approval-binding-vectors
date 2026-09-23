@@ -82,11 +82,8 @@ def p5(rec) -> bool:
 
 
 def p6(rec) -> bool:
-    execs = C_execs(rec)
-    if len(execs) < 2:
-        return True
-    nonces = [e.get("nonce_used") for e in execs]
-    return len(set(nonces)) == len(nonces)
+    # At most one execution per approval, regardless of nonce values (see check.py).
+    return len(C_execs(rec)) < 2
 
 
 def _has_ref(args) -> bool:

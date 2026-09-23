@@ -4,7 +4,7 @@ A protocol-neutral conformance corpus for one question:
 
 > **Does this record prove that what executed is what was approved?**
 
-12 vectors — 9 negative, 3 positive controls — over six predicates. Dependency-free
+13 vectors — 10 negative, 3 positive controls — over six predicates. Dependency-free
 reference checker. No protocol required.
 
 ```
@@ -20,9 +20,10 @@ $ python3 check.py
   PASS  NEG-P4-01    P4: executed at 2026-09-19T13:00:00Z after approval expired ...
   PASS  NEG-P5-01    P5: approval attested by the executing party (executor.example)
   PASS  NEG-P5-02    P5: no approval attestation
-  PASS  NEG-P6-01    P6: approval nonce reused across 2 executions
+  PASS  NEG-P6-01    P6: one approval, 2 executions
+  PASS  NEG-P6-02    P6: one approval, 2 executions
 
-12/12 vectors behaved as specified
+13/13 vectors behaved as specified
 acceptance controls: 3 accepted (a run with 0 is not a result, regardless of the negatives)
 ```
 
@@ -33,7 +34,7 @@ hypothetical — it is what the corpus caught on its first adversarial run.
 
 A deliberately weak checker was built to test whether the corpus discriminates. It compares
 the reference string instead of dereferencing it, never checks who attested the approval,
-and never checks expiry or reuse. Against the nine negative vectors it scored **9 of 9**:
+and never checks expiry or reuse. Against the ten negative vectors it scored **10 of 10**:
 
 ```
 naive checker MISSES 0: []
@@ -41,7 +42,7 @@ predicates it silently fails: []
 false rejections of controls: 2
 ```
 
-Nine out of nine, and it is not a binding at all. It rejects *anything containing a
+Ten out of ten, and it is not a binding at all. It rejects *anything containing a
 reference*, which happens to include every negative vector — and also `CTRL-01` and
 `CTRL-02`. The controls are the only thing in the corpus that can tell the difference
 between a checker that works and a checker that refuses.
@@ -77,9 +78,9 @@ contribution. **A counterexample to isolation is a break even if the overall ver
 | **P1** | The approval's scope commits to the executed **action**. |
 | **P2** | The approval's scope commits to the executed **argument bytes**. |
 | **P3** | Where content is named by **reference**, the commitment covers the dereferenced bytes, and the executor verifies and then consumes those same bytes. |
-| **P4** | The approval is **valid at the instant of execution**. |
+| **P4** | The approval has **not expired** at the recorded execution time. **Expiry only**: v0.1 does not model revocation. |
 | **P5** | A **separate attester**: an approval attestation exists, its attester is not an executor, its key is known, and it verifies over the scope. Does **not** test authority for the scope. |
-| **P6** | An approval authorises **at most one** execution — a *profile choice*; reusable approvals can be legitimate. |
+| **P6** | An approval authorises **at most one** execution, whatever nonce each execution claims — a *profile choice*; reusable approvals can be legitimate. |
 
 Full definitions, canonical form, and the P2/P3 precedence rule: [`SPEC.md`](SPEC.md).
 Real-world referent for every predicate: [`profiles/OBSERVED.md`](profiles/OBSERVED.md).
@@ -126,6 +127,20 @@ what a reproduction report needs, and what will and will not be claimed about yo
 Short version: a reproducible disagreement with `check.py` or `isolation.py` is the single most
 useful thing you can send back. Negative-vector agreement alone is insufficient evidence of
 checker correctness — report `CTRL` results or do not report results.
+
+## Changelog
+
+- **v0.1.2** (2026-09-23). **P6 fix.** `check.py` and `isolation.py` implemented P6 as "no two
+  executions share a `nonce_used` value", so one approval executed twice under *distinct*
+  nonce values was accepted, although P6 says an approval authorises at most one execution.
+  Both now reject more than one execution per approval. New negative **NEG-P6-02** (same
+  approval, distinct nonces) catches the old behaviour: the v0.1.1 checker scores it
+  `FAIL expected reject, got accept`. The twelve existing vectors are byte-identical. P4 is
+  now described as expiry-only, which is what the checker has always tested. Found by an
+  external review of the accompanying paper, which asked whether P6 detects reuse of an
+  approval or only duplication of a nonce.
+- **v0.1.1** (2026-09-19). P5 described as a separate-attester check, not an authority check.
+- **v0.1.0** (2026-09-19). Initial release.
 
 ## Status
 

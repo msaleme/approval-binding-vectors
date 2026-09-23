@@ -88,11 +88,11 @@ def verify(rec: dict) -> tuple[str, str | None, str]:
         if not hmac.compare_digest(expected, a.get("mac", "")):
             raise Reject("P5", "approval attestation does not verify over the scope")
 
-    # P6 -- single use.
+    # P6 -- single use. An approval authorises at most one execution, whatever nonce
+    # each execution claims. v0.1.1 only compared nonces for duplicates, so one approval
+    # executed twice under distinct nonce values was accepted (NEG-P6-02).
     if len(executions) > 1:
-        nonces = [e.get("nonce_used") for e in executions]
-        if len(set(nonces)) < len(nonces):
-            raise Reject("P6", f"approval nonce reused across {len(executions)} executions")
+        raise Reject("P6", f"one approval, {len(executions)} executions")
 
     for ex in executions:
         # P1 -- action.

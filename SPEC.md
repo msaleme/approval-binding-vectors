@@ -32,9 +32,9 @@ negates exactly one.
 | **P1** | **Action.** The approval's scope commits to the executed action identifier. | Approved tool A, executed tool B. |
 | **P2** | **Arguments.** The approval's scope commits to the executed argument bytes. | Approved tool A with args X, executed A with args Y. |
 | **P3** | **Dereference.** Where either side names content by reference, the commitment covers the *dereferenced bytes*, and the executor verifies and then consumes **those same bytes**. | Approval commits a URI; the bytes behind it change before execution. Or: the executor hashes, then re-fetches. |
-| **P4** | **Freshness.** The approval is valid at the instant of execution. | Approval correctly scoped, granted, and expired before it was used. |
+| **P4** | **Freshness.** The approval has not expired at the recorded execution time. **Expiry only**: v0.1 does not model revocation. | Approval correctly scoped, granted, and expired before it was used. |
 | **P5** | **Separate attester.** An approval attestation exists, its attester is **not** an executing party, its key is one the verifier holds, and the attestation verifies over the approval scope. | A record in which the executor is also the only witness that it was approved. |
-| **P6** | **Single use.** An approval authorises at most one execution. **This is a profile choice, not a universal requirement** — a standing budget or allowlist is legitimately reusable. ABV defines a *single-use* profile; a protocol with a different reuse bound is not thereby non-conforming to itself. | One approval replayed for a second execution. |
+| **P6** | **Single use.** An approval authorises at most one execution, whatever nonce each execution claims; comparing nonces for duplicates is not sufficient. **This is a profile choice, not a universal requirement** — a standing budget or allowlist is legitimately reusable. ABV defines a *single-use* profile; a protocol with a different reuse bound is not thereby non-conforming to itself. | One approval replayed for a second execution. |
 
 P1 and P2 are separate on purpose. A joint commitment over `(action, arguments)` satisfies
 both, but splitting them lets an operator distinguish *someone approved a different tool*

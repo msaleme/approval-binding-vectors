@@ -209,6 +209,15 @@ def build() -> None:
     emit("NEG-P6-01", "P6", r,
          "One approval, one nonce, two executions.")
 
+    r = sound()
+    r["execution"] = [
+        dict(r["execution"]),
+        dict(r["execution"], at="2026-09-19T11:30:00Z", nonce_used="n-0002"),
+    ]
+    emit("NEG-P6-02", "P6", r,
+         "One approval, two executions under distinct nonce values. A checker that only "
+         "compares nonces for duplicates accepts this; the approval was still used twice.")
+
     print(f"wrote {len(list(OUT.glob('*.json')))} vectors")
 
 

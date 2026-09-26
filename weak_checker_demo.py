@@ -6,11 +6,15 @@ It makes the three mistakes the corpus exists to catch:
   2. never checks who attested the approval                   (should miss P5)
   3. never checks expiry or reuse                             (should miss P4, P6)
 It does compare action and arguments, so it should still catch P1 and P2.
+
+Usage: python3 weak_checker_demo.py vectors
 """
 import hashlib, json, sys
 from pathlib import Path
 
-def jcs(o): return json.dumps(o, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+# The corpus's own RFC 8785 canonicalizer, so this checker's weaknesses are the
+# three above and not a fourth (until v0.1.3 it used sorted compact JSON).
+from jcs import canonicalize as jcs
 def dg(o): return hashlib.sha256(jcs(o)).hexdigest()
 
 rows = []

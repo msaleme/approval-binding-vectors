@@ -1,0 +1,42 @@
+{
+  "abv": "0.1",
+  "id": "CTRL-04",
+  "note": "Near miss inside hashed content: approval over replicas 3, execution carries 3.0. RFC 8785 serialises both as 3, so the digests match. A checker that rejects this is not canonicalising numbers per RFC 8785.",
+  "request": {
+    "action": "deploy.scale",
+    "arguments": {
+      "service": "checkout",
+      "replicas": 3
+    }
+  },
+  "approval": {
+    "scope": {
+      "action": "deploy.scale",
+      "arguments_digest": "f7b3f0e4e5d3887c08a64cd0bd4b35f5e7867c8d19a2fc5d76172e91ea082cf2"
+    },
+    "authority": "approver.example",
+    "not_after": "2026-09-19T12:00:00Z",
+    "nonce": "n-0005"
+  },
+  "execution": {
+    "action": "deploy.scale",
+    "arguments": {
+      "service": "checkout",
+      "replicas": 3.0
+    },
+    "at": "2026-09-19T11:00:00Z",
+    "status": "completed",
+    "by": "executor.example",
+    "nonce_used": "n-0005"
+  },
+  "attestations": [
+    {
+      "claim": "approval",
+      "authority": "approver.example",
+      "mac": "34aaa155fef2bbe7557e9a7540908ee9ce133b87c7052f277ad054a5f5be040f"
+    }
+  ],
+  "expect": {
+    "verdict": "accept"
+  }
+}

@@ -21,7 +21,8 @@ import check as C
 
 def p1(rec) -> bool:
     sc = rec["approval"]["scope"]
-    return all(e.get("action") == sc.get("action") for e in C_execs(rec))
+    return sc.get("action") is not None and all(
+        e.get("action") == sc.get("action") for e in C_execs(rec))
 
 
 def p2(rec) -> bool:
@@ -59,10 +60,21 @@ def p3(rec) -> bool:
 
 
 def p4(rec) -> bool:
+    # Fail-closed: no not_after, no execution time, or an unparseable time fails P4.
+    # Until v0.1.3 a missing not_after returned True here (NEG-P4-02). Written out
+    # rather than calling check.py, so the two implementations stay independent.
     ap = rec["approval"]
     if "not_after" not in ap:
-        return True
-    return all(C.ts(e["at"]) <= C.ts(ap["not_after"]) for e in C_execs(rec))
+        return False
+    for e in C_execs(rec):
+        if "at" not in e:
+            return False
+        try:
+            if C.ts(e["at"]) > C.ts(ap["not_after"]):
+                return False
+        except (TypeError, ValueError):
+            return False
+    return True
 
 
 def p5(rec) -> bool:

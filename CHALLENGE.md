@@ -5,7 +5,15 @@
 > paper closed with the same sentence: they had not independently reproduced these results.
 > This page exists so that someone can.
 
-**Status:** open, no end date · **Version:** 1.0, 2026-09-19
+**Status:** open, no end date · **Version:** 1.1, 2026-09-26 (1.0, 2026-09-19)
+
+> **Re-pinned 2026-09-26 to ABV v0.1.3.** Version 1.0 pinned ABV at `88548a6` (12 vectors),
+> which predates the v0.1.2 P6 fix. A reproduction run at `88548a6`, or at v0.1.2
+> (`50c6429`, 13 vectors), is a reproduction of that revision and stands as reported. Both
+> revisions predate v0.1.3, which moved the reference checker to RFC 8785 canonicalization
+> (it had used sorted compact JSON while SPEC said JCS) and made a missing `not_after` fail
+> P4; a disagreement on either point at those pins is a finding against that revision, now
+> corrected. See the [changelog](https://github.com/msaleme/approval-binding-vectors/blob/e486c8a91bca76883a5618edb7cbf6402de6b100/README.md#changelog).
 
 Two people have independently reproduced or challenged work in this portfolio without being
 asked. Both times the exchange was worth more than anything published in the same period,
@@ -19,7 +27,7 @@ your own checker and disagree.
 
 | Corpus | Claim under challenge | Where to start |
 |---|---|---|
-| **ABV** — approval binding vectors, 12 vectors over 6 predicates | (a) each negative vector violates **exactly** its designated predicate and satisfies the other five; (b) every positive control is accepted under the published rules. | [`msaleme/approval-binding-vectors`](https://github.com/msaleme/approval-binding-vectors) @ [`88548a61c960`](https://github.com/msaleme/approval-binding-vectors/tree/88548a61c960d2ddd25ded9d9a0eceedd4455c83) · rules [`SPEC.md`](https://github.com/msaleme/approval-binding-vectors/blob/88548a61c960d2ddd25ded9d9a0eceedd4455c83/SPEC.md) · vectors [`vectors/`](https://github.com/msaleme/approval-binding-vectors/tree/88548a61c960d2ddd25ded9d9a0eceedd4455c83/vectors) (each carries its own `expect`) · checkers [`check.py`](https://github.com/msaleme/approval-binding-vectors/blob/88548a61c960d2ddd25ded9d9a0eceedd4455c83/check.py), [`isolation.py`](https://github.com/msaleme/approval-binding-vectors/blob/88548a61c960d2ddd25ded9d9a0eceedd4455c83/isolation.py) · digests [`SHA256SUMS`](https://github.com/msaleme/approval-binding-vectors/blob/88548a61c960d2ddd25ded9d9a0eceedd4455c83/SHA256SUMS) |
+| **ABV** — approval binding vectors, v0.1.3, 15 vectors over 6 predicates | (a) each negative vector violates **exactly** its designated predicate and satisfies the other five; (b) every positive control is accepted under the published rules. | [`msaleme/approval-binding-vectors`](https://github.com/msaleme/approval-binding-vectors) @ [`e486c8a91bca`](https://github.com/msaleme/approval-binding-vectors/tree/e486c8a91bca76883a5618edb7cbf6402de6b100) · rules [`SPEC.md`](https://github.com/msaleme/approval-binding-vectors/blob/e486c8a91bca76883a5618edb7cbf6402de6b100/SPEC.md) · vectors [`vectors/`](https://github.com/msaleme/approval-binding-vectors/tree/e486c8a91bca76883a5618edb7cbf6402de6b100/vectors) (each carries its own `expect`) · checkers [`check.py`](https://github.com/msaleme/approval-binding-vectors/blob/e486c8a91bca76883a5618edb7cbf6402de6b100/check.py), [`isolation.py`](https://github.com/msaleme/approval-binding-vectors/blob/e486c8a91bca76883a5618edb7cbf6402de6b100/isolation.py) · digests [`SHA256SUMS`](https://github.com/msaleme/approval-binding-vectors/blob/e486c8a91bca76883a5618edb7cbf6402de6b100/SHA256SUMS) |
 | **RCL** — receipt claim-level verification, 11 vectors | A format-valid, correctly-signed receipt can still be claim-invalid, and a claim-level verifier must reject it on semantic grounds while envelope-signature verification succeeds. | [`msaleme/red-team-blue-team-agent-fabric`](https://github.com/msaleme/red-team-blue-team-agent-fabric) @ [`e2a647fa4976`](https://github.com/msaleme/red-team-blue-team-agent-fabric/tree/e2a647fa49760cd290e3b9541751ab5e357ad568) · **acceptance rules and vector definitions**: [`protocol_tests/receipt_claim_harness.py`](https://github.com/msaleme/red-team-blue-team-agent-fabric/blob/e2a647fa49760cd290e3b9541751ab5e357ad568/protocol_tests/receipt_claim_harness.py) — `ClaimLevelVerifier.verify()` is the normative rule set, the `NEGATIVES` table names each vector, and `RCL-008` is the acceptance control · IDs and line anchors in [`HARNESS_TEST_CATALOG.md`](https://github.com/msaleme/red-team-blue-team-agent-fabric/blob/e2a647fa49760cd290e3b9541751ab5e357ad568/HARNESS_TEST_CATALOG.md) · run `python3 -m protocol_tests.receipt_claim_harness --simulate` |
 
 Submissions go to the issue tracker of the corpus you ran against.
@@ -59,7 +67,7 @@ should say that is what it is.
    predicates differs from the single designated one — whether it violates **none**, a
    different one, or more than one. The overall verdict can stay correct while the
    decomposition is wrong, and the decomposition is the contribution. This is why full
-   reports need **per-predicate results**, not just final verdicts. [`isolation.py`](https://github.com/msaleme/approval-binding-vectors/blob/88548a61c960d2ddd25ded9d9a0eceedd4455c83/isolation.py)
+   reports need **per-predicate results**, not just final verdicts. [`isolation.py`](https://github.com/msaleme/approval-binding-vectors/blob/e486c8a91bca76883a5618edb7cbf6402de6b100/isolation.py)
    is my own test of this claim. A reproducible disagreement with it is a **finding to
    investigate** — either implementation could be wrong. A demonstrated mismatch between its
    results and the published predicate definitions in `SPEC.md` is a **break**.
@@ -83,7 +91,7 @@ checker that rejects everything matches the expected rejection verdict for every
 vector in both corpora. That is not
 hypothetical: a deliberately weak checker built against ABV v0.1 — one that compares the
 reference string instead of dereferencing it, and never checks attestation, expiry or reuse
-— scored **nine out of nine** on the negatives while being no binding at all ([`weak_checker_demo.py`](https://github.com/msaleme/approval-binding-vectors/blob/88548a61c960d2ddd25ded9d9a0eceedd4455c83/weak_checker_demo.py), recorded output in [`WEAK_CHECKER_RESULT.txt`](https://github.com/msaleme/approval-binding-vectors/blob/88548a61c960d2ddd25ded9d9a0eceedd4455c83/WEAK_CHECKER_RESULT.txt)). It rejected
+— scored **eleven out of eleven** on the negatives at this pin (nine of nine at the v1.0 pin) while being no binding at all ([`weak_checker_demo.py`](https://github.com/msaleme/approval-binding-vectors/blob/e486c8a91bca76883a5618edb7cbf6402de6b100/weak_checker_demo.py), recorded output in [`WEAK_CHECKER_RESULT.txt`](https://github.com/msaleme/approval-binding-vectors/blob/e486c8a91bca76883a5618edb7cbf6402de6b100/WEAK_CHECKER_RESULT.txt)). It rejected
 anything containing a reference, which the positive controls caught and the negatives could
 not.
 

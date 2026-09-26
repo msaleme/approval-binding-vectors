@@ -32,7 +32,7 @@ negates exactly one.
 | **P1** | **Action.** The approval's scope commits to the executed action identifier. | Approved tool A, executed tool B. |
 | **P2** | **Arguments.** The approval's scope commits to the executed argument bytes. | Approved tool A with args X, executed A with args Y. |
 | **P3** | **Dereference.** Where either side names content by reference, the commitment covers the *dereferenced bytes*, and the executor verifies and then consumes **those same bytes**. | Approval commits a URI; the bytes behind it change before execution. Or: the executor hashes, then re-fetches. |
-| **P4** | **Freshness.** The approval has not expired at the recorded execution time. **Expiry only**: v0.1 does not model revocation. | Approval correctly scoped, granted, and expired before it was used. |
+| **P4** | **Freshness.** The approval carries an expiry (`not_after`) and has not expired at the recorded execution time. An approval with no expiry, or an execution with no recorded time, fails P4: ABV approvals are time-bounded. **Expiry only**: v0.1 does not model revocation. | Approval correctly scoped, granted, and expired before it was used; or granted with no bound at all. |
 | **P5** | **Separate attester.** An approval attestation exists, its attester is **not** an executing party, its key is one the verifier holds, and the attestation verifies over the approval scope. | A record in which the executor is also the only witness that it was approved. |
 | **P6** | **Single use.** An approval authorises at most one execution, whatever nonce each execution claims; comparing nonces for duplicates is not sufficient. **This is a profile choice, not a universal requirement** — a standing budget or allowlist is legitimately reusable. ABV defines a *single-use* profile; a protocol with a different reuse bound is not thereby non-conforming to itself. | One approval replayed for a second execution. |
 
@@ -63,7 +63,21 @@ draft's P2 vectors used referenced arguments and were correctly classified P3.
 ## Canonical form
 
 Digests are SHA-256 over **JCS** ([RFC 8785](https://www.rfc-editor.org/rfc/rfc8785))
-serialization of the covered object, lowercase hex, unprefixed.
+serialization of the covered object, lowercase hex, unprefixed. In particular: numbers are
+IEEE 754 doubles serialized as ECMAScript does (`3.0` and `3` are both `3`; `1E-07` is
+`1e-7`), strings are emitted as-is apart from `"`, `\` and U+0000 to U+001F, and object
+members are sorted by UTF-16 code units. An integer beyond 2^53 does not survive that
+conversion; carry one as a string.
+
+`jcs.py` is the reference implementation, shared by the checkers and the generator.
+`test_jcs.py` checks it against the values RFC 8785 publishes (Appendix B and the
+section 3.2 worked example), not against itself. **v0.1.0 to v0.1.2 did not meet this
+section**: their checker used sorted compact JSON (`json.dumps(sort_keys=True)`). That
+agrees with RFC 8785 on strings, booleans, null and integers up to 2^53, which is every
+value in vectors `CTRL-01` to `NEG-P6-02`, so their digests are unchanged. It disagrees on
+integral and exponent-form floats (`3.0`, `1e-07`, `1e+16`), on `-0.0`, on member order
+when names mix characters above U+FFFF with U+E000 to U+FFFF, and it emits NaN, Infinity
+and lone surrogates where RFC 8785 requires an error. See the README changelog.
 
 Two rules that RFC 8785 does not settle and that every implementation must state:
 
@@ -74,6 +88,11 @@ Two rules that RFC 8785 does not settle and that every implementation must state
 2. **Referenced content.** A member naming content by reference contributes the digest of
    the **dereferenced bytes**, not the reference string. A profile that commits a URI
    without a sibling digest does not satisfy P3.
+
+**Missing members fail closed.** A member a predicate needs, if absent, fails that
+predicate: no approval attestation fails P5, no `not_after` or no execution `at` fails P4,
+and a scope with no `action` fails P1. A checker that skips a check because its input is
+missing has not checked it.
 
 **A canonicalization mismatch MUST reject before execution.** An implementation that logs a
 mismatch and proceeds has implemented no binding at all, and an implementation that treats a
@@ -98,9 +117,14 @@ is why `CTRL-*` exists and why it is not optional. A submitted result that repor
 
 Two further controls, both learned from real suites:
 
-- **`CTRL-02` is a near-miss.** It differs from a negative vector in one byte that should
-  not matter — a re-ordered object, a different but equivalent number form. A checker that
-  rejects it has a canonicalization bug that the other controls cannot see.
+- **`CTRL-02` and `CTRL-04` are near misses**, each differing from a sound record only in
+  serialisation the canonical form declares immaterial. `CTRL-02` re-orders the members of
+  the approval object; that object is not hashed and any JSON parser erases member order, so
+  it catches only a checker that hashes raw bytes. `CTRL-04` carries an equivalent number
+  form **inside the digested arguments**: the approval commits `replicas: 3`, the execution
+  carries `3.0`. A checker that rejects either has a canonicalization bug that the other
+  controls cannot see. (Until v0.1.3 this bullet claimed `CTRL-02` covered the number form.
+  It did not, and the reference checker would have failed `CTRL-04`.)
 - **The positive path must be deterministic.** A positive control wired to a real
   side-effecting operation fails for reasons unrelated to the binding, and a test that fails
   for unrelated reasons is one that eventually gets muted. ABV vectors are pure data.

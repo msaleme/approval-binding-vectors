@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ABV v0.1 reference checker — dependency-free.
+"""ABV v0.1 reference checker — dependency-free (standard library + jcs.py).
 
 This is a REFERENCE, not an authority. Its purpose is to demonstrate that the
 vector set is satisfiable: a checker can exist that rejects every negative for
@@ -19,15 +19,15 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+# RFC 8785 (jcs.py). Until v0.1.3 this was json.dumps(sort_keys=True, separators=(",", ":")),
+# which is not JCS: it emits 3.0 where RFC 8785 emits 3, so CTRL-04 was falsely rejected.
+from jcs import canonicalize as jcs
+
 KEYS = {"approver.example": b"abv/approver", "executor.example": b"abv/executor"}
 BLOBS = {
     "blob://plan-v1": b'{"target":"prod","replicas":3}',
     "blob://plan-v2": b'{"target":"prod","replicas":300}',
 }
-
-
-def jcs(obj) -> bytes:
-    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
 
 
 def digest(obj) -> str:
@@ -54,6 +54,26 @@ def resolve(args: dict) -> dict:
 
 def ts(s: str) -> datetime:
     return datetime.fromisoformat(s.replace("Z", "+00:00"))
+
+
+def expiry_violation(approval: dict, ex: dict) -> str | None:
+    """P4, fail-closed. None when the approval had not expired at execution time.
+
+    An approval with no `not_after`, or an execution with no `at`, cannot be shown
+    to satisfy P4, so it fails P4 -- as a record with no attestation fails P5.
+    v0.1.0 to v0.1.2 skipped the check when `not_after` was absent (NEG-P4-02).
+    """
+    if "not_after" not in approval:
+        return "approval carries no not_after; ABV approvals are time-bounded"
+    if "at" not in ex:
+        return "execution carries no time; freshness cannot be established"
+    try:
+        late = ts(ex["at"]) > ts(approval["not_after"])
+    except (TypeError, ValueError):
+        return f"unparseable time (at={ex['at']!r}, not_after={approval['not_after']!r})"
+    if late:
+        return f"executed at {ex['at']} after approval expired {approval['not_after']}"
+    return None
 
 
 class Reject(Exception):
@@ -95,8 +115,9 @@ def verify(rec: dict) -> tuple[str, str | None, str]:
         raise Reject("P6", f"one approval, {len(executions)} executions")
 
     for ex in executions:
-        # P1 -- action.
-        if ex.get("action") != scope.get("action"):
+        # P1 -- action. A scope that names no action commits to none, so it cannot
+        # match one -- not even an execution that also omits it.
+        if scope.get("action") is None or ex.get("action") != scope.get("action"):
             raise Reject("P1", f"approved action {scope.get('action')!r}, executed {ex.get('action')!r}")
 
         # P3 / P2 -- dereference, then arguments.
@@ -121,9 +142,10 @@ def verify(rec: dict) -> tuple[str, str | None, str]:
                 raise Reject("P3", "referenced bytes at execution are not the approved bytes")
             raise Reject("P2", "executed arguments are not the approved arguments")
 
-        # P4 -- freshness.
-        if "not_after" in approval and ts(ex["at"]) > ts(approval["not_after"]):
-            raise Reject("P4", f"executed at {ex['at']} after approval expired {approval['not_after']}")
+        # P4 -- freshness (expiry only; required in the ABV profile).
+        why = expiry_violation(approval, ex)
+        if why:
+            raise Reject("P4", why)
 
     return ("accept", None, "all six predicates hold")
 

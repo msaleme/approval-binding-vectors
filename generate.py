@@ -30,8 +30,9 @@ BLOBS = {
 }
 
 
-def jcs(obj) -> bytes:
-    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+# The same RFC 8785 canonicalizer check.py uses; one implementation, so the digests
+# the vectors carry cannot drift from the digests the checker recomputes.
+from jcs import canonicalize as jcs
 
 
 def digest(obj) -> str:
@@ -105,7 +106,8 @@ def build() -> None:
          "Fully sound record. A checker that cannot accept this has not implemented a "
          "binding; it has implemented a refusal.")
 
-    # near-miss: same record, members reordered and an equivalent number form.
+    # near-miss: same record, members of the (unhashed) approval object reordered.
+    # Any JSON parser erases this; CTRL-04 is the near miss inside hashed content.
     nm = sound()
     nm["approval"] = {k: nm["approval"][k] for k in reversed(list(nm["approval"]))}
     emit("CTRL-02", None, nm,
@@ -125,6 +127,23 @@ def build() -> None:
         attestations=[attest("approver.example", "approval", ia_scope)]),
         "Sound record with inline arguments and no reference, so P3 is vacuous. Guards "
         "against a checker that only works when a $ref is present.")
+
+    # near-miss inside the digested arguments: an equivalent number form. The
+    # approval commits replicas=3; the execution carries 3.0. RFC 8785 serialises
+    # both as 3. Sorted compact JSON (v0.1.0 to v0.1.2) emits 3.0 and rejects P2.
+    nf_args = {"service": "checkout", "replicas": 3}
+    nf_scope = {"action": "deploy.scale", "arguments_digest": digest(nf_args)}
+    emit("CTRL-04", None, sound(
+        request={"action": "deploy.scale", "arguments": nf_args},
+        approval={"scope": nf_scope, "authority": "approver.example",
+                  "not_after": "2026-09-19T12:00:00Z", "nonce": "n-0005"},
+        execution={"action": "deploy.scale", "arguments": {"service": "checkout", "replicas": 3.0},
+                   "at": "2026-09-19T11:00:00Z", "status": "completed",
+                   "by": "executor.example", "nonce_used": "n-0005"},
+        attestations=[attest("approver.example", "approval", nf_scope)]),
+        "Near miss inside hashed content: approval over replicas 3, execution carries 3.0. "
+        "RFC 8785 serialises both as 3, so the digests match. A checker that rejects this "
+        "is not canonicalising numbers per RFC 8785.")
 
     # ---------- P1: action ----------
     r = sound()
@@ -186,6 +205,13 @@ def build() -> None:
     r["execution"]["at"] = "2026-09-19T13:00:00Z"   # after not_after
     emit("NEG-P4-01", "P4", r,
          "Correctly scoped and attested approval, executed after it expired.")
+
+    r = sound()
+    del r["approval"]["not_after"]
+    emit("NEG-P4-02", "P4", r,
+         "Correctly scoped and attested approval with no not_after. ABV approvals are "
+         "time-bounded; freshness cannot be established, so P4 fails closed. A checker "
+         "that skips expiry when the member is absent accepts this.")
 
     # ---------- P5: authority ----------
     r = sound()

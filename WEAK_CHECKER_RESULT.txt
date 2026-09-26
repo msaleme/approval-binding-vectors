@@ -2,12 +2,14 @@ vector       expected  naive says  caught?
   CTRL-01      accept    reject      false-reject
   CTRL-02      accept    reject      false-reject
   CTRL-03      accept    accept      yes
+  CTRL-04      accept    accept      yes
   NEG-P1-01    reject    reject      yes
   NEG-P2-01    reject    reject      yes
   NEG-P2-02    reject    reject      yes
   NEG-P3-01    reject    reject      yes
   NEG-P3-02    reject    reject      yes
   NEG-P4-01    reject    reject      yes
+  NEG-P4-02    reject    reject      yes
   NEG-P5-01    reject    reject      yes
   NEG-P5-02    reject    reject      yes
   NEG-P6-01    reject    reject      yes

@@ -111,6 +111,7 @@ test_jcs.py          jcs.py against the values RFC 8785 publishes (python3 -m un
 test_check.py        missing members fail closed, in check.py and isolation.py alike
 vectors/*.json       the corpus
 profiles/OBSERVED.md where each predicate was observed in a real specification
+docs/VOCABULARY-CROSSWALK.md  other papers' terms for these failures, mapped to vector IDs
 ```
 
 Vectors are **generated, not hand-written**, so that every negative is provably a

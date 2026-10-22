@@ -112,6 +112,7 @@ test_check.py        missing members fail closed, in check.py and isolation.py a
 vectors/*.json       the corpus
 profiles/OBSERVED.md where each predicate was observed in a real specification
 docs/VOCABULARY-CROSSWALK.md  other papers' terms for these failures, mapped to vector IDs
+research/verifiable-intent-probe/  an offline probe of a card-network mandate-chain verifier (Verifiable Intent v0.1)
 ```
 
 Vectors are **generated, not hand-written**, so that every negative is provably a

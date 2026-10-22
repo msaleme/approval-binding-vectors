@@ -1,0 +1,292 @@
+{
+ "vi_commit": "356c296",
+ "python": "3.15.0",
+ "results": [
+  {
+   "case": "P0 valid chain (positive control)",
+   "vi_section": "-",
+   "spec_expectation": "accept",
+   "harness_candidates": "-",
+   "note": "",
+   "default": {
+    "valid": true,
+    "errors": [],
+    "skipped": [
+     "l2_aud (no expected value provided)",
+     "l2_nonce (no expected value provided)",
+     "l3a_(payment)_aud (no expected value provided)",
+     "l3a_(payment)_nonce (no expected value provided)"
+    ]
+   },
+   "hardened": {
+    "valid": true,
+    "errors": [],
+    "skipped": []
+   }
+  },
+  {
+   "case": "4.1 same L3a presented twice",
+   "vi_section": "4.1",
+   "spec_expectation": "verifier MUST reject a nonce already seen",
+   "harness_candidates": "AP2-011, CTK-005",
+   "note": "library keeps no nonce store; replay detection is the integrator's",
+   "default": {
+    "valid": [
+     true,
+     true
+    ]
+   },
+   "hardened": {
+    "valid": [
+     true,
+     true
+    ]
+   }
+  },
+  {
+   "case": "4.1 L3a addressed to another audience",
+   "vi_section": "4.1",
+   "spec_expectation": "verifier MUST check aud",
+   "harness_candidates": "CTK-002, MCP-022 (class)",
+   "note": "",
+   "default": {
+    "valid": true,
+    "errors": [],
+    "skipped": [
+     "l2_aud (no expected value provided)",
+     "l2_nonce (no expected value provided)",
+     "l3a_(payment)_aud (no expected value provided)",
+     "l3a_(payment)_nonce (no expected value provided)"
+    ]
+   },
+   "hardened": {
+    "valid": false,
+    "errors": [
+     "L3a (payment) aud mismatch: expected 'https://www.mastercard.com', got 'https://attacker-merchant.example'"
+    ],
+    "skipped": []
+   }
+  },
+  {
+   "case": "4.2 N+1 L3a from one L2 mandate pair (fresh nonce)",
+   "vi_section": "4.2",
+   "spec_expectation": "payment network MUST track issuance per L2 (sd_hash) and reject",
+   "harness_candidates": "AP2-013, CTK-004",
+   "note": "by design outside the library; the network's stateful log is the control",
+   "default": {
+    "valid": [
+     true,
+     true
+    ]
+   },
+   "hardened": {
+    "valid": "n/a: each L3a carries its own nonce, so expected-nonce cannot bind it to one use"
+   }
+  },
+  {
+   "case": "4.2 L3a amount above L2 max (99,999 > 40,000)",
+   "vi_section": "4.2 step 4 / constraints.md",
+   "spec_expectation": "reject (amount_range)",
+   "harness_candidates": "CTK-003",
+   "note": "",
+   "default": {
+    "valid": true,
+    "errors": [],
+    "skipped": [
+     "l2_aud (no expected value provided)",
+     "l2_nonce (no expected value provided)",
+     "l3a_(payment)_aud (no expected value provided)",
+     "l3a_(payment)_nonce (no expected value provided)"
+    ]
+   },
+   "hardened": {
+    "valid": true,
+    "errors": [],
+    "skipped": []
+   },
+   "check_constraints": {
+    "satisfied": false,
+    "violations": [
+     "Amount exceeds maximum: 99999 > 40000 USD"
+    ]
+   }
+  },
+  {
+   "case": "4.3 L2 re-signed by attacker key (stripped constraints)",
+   "vi_section": "4.3",
+   "spec_expectation": "reject (L2 signature)",
+   "harness_candidates": "AP2-008 (adjacent: sd_hash substitution)",
+   "note": "",
+   "default": {
+    "valid": false,
+    "errors": [
+     "L2 signature verification failed (user key mismatch)"
+    ],
+    "skipped": []
+   },
+   "hardened": {
+    "valid": false,
+    "errors": [
+     "L2 signature verification failed (user key mismatch)"
+    ],
+    "skipped": []
+   }
+  },
+  {
+   "case": "4.4a mismatch, both L3s presented",
+   "vi_section": "4.4",
+   "spec_expectation": "reject (cross-reference)",
+   "harness_candidates": "AP2-007",
+   "note": "",
+   "default": {
+    "valid": false,
+    "errors": [
+     "L3 cross-reference check failed: L3 cross-reference mismatch: transaction_id=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX != checkout_hash=YHL04pr7fbPaODHUiWn4gAc1gNrlp5a7PNcKBQovHSk"
+    ],
+    "skipped": [
+     "l2_aud (no expected value provided)",
+     "l2_nonce (no expected value provided)",
+     "l3a_(payment)_aud (no expected value provided)",
+     "l3a_(payment)_nonce (no expected value provided)"
+    ]
+   },
+   "hardened": {
+    "valid": false,
+    "errors": [
+     "L3 cross-reference check failed: L3 cross-reference mismatch: transaction_id=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX != checkout_hash=YHL04pr7fbPaODHUiWn4gAc1gNrlp5a7PNcKBQovHSk"
+    ],
+    "skipped": []
+   }
+  },
+  {
+   "case": "4.4b mismatch, network sees L3a only",
+   "vi_section": "4.4",
+   "spec_expectation": "spec: network cannot see checkout; relies on L2 conditional_transaction_id",
+   "harness_candidates": "AP2-007",
+   "note": "",
+   "default": {
+    "valid": true,
+    "errors": [],
+    "skipped": [
+     "l2_aud (no expected value provided)",
+     "l2_nonce (no expected value provided)",
+     "l3a_(payment)_aud (no expected value provided)",
+     "l3a_(payment)_nonce (no expected value provided)"
+    ]
+   },
+   "hardened": {
+    "valid": true,
+    "errors": [],
+    "skipped": []
+   }
+  },
+  {
+   "case": "4.5 L3a with alg=none, no signature",
+   "vi_section": "4.5",
+   "spec_expectation": "reject (ES256 only)",
+   "harness_candidates": "MCP-022 (class), none direct",
+   "note": "",
+   "default": {
+    "valid": false,
+    "errors": [
+     "L3a (payment) signature verification failed (agent key mismatch)"
+    ],
+    "skipped": [
+     "l2_aud (no expected value provided)",
+     "l2_nonce (no expected value provided)"
+    ]
+   },
+   "hardened": {
+    "valid": false,
+    "errors": [
+     "L3a (payment) signature verification failed (agent key mismatch)"
+    ],
+    "skipped": []
+   }
+  },
+  {
+   "case": "4.6 L3a expired 200 s ago (default skew 300 s)",
+   "vi_section": "4.6",
+   "spec_expectation": "RECOMMENDED tolerance; accepted by design",
+   "harness_candidates": "AP2-012, CTK-007",
+   "note": "",
+   "default": {
+    "valid": true,
+    "errors": [],
+    "skipped": [
+     "l2_aud (no expected value provided)",
+     "l2_nonce (no expected value provided)",
+     "l3a_(payment)_aud (no expected value provided)",
+     "l3a_(payment)_nonce (no expected value provided)"
+    ]
+   },
+   "hardened": {
+    "valid": true,
+    "errors": [],
+    "skipped": []
+   }
+  },
+  {
+   "case": "4.6 same, verifier skew 60 s",
+   "vi_section": "4.6",
+   "spec_expectation": "reject",
+   "harness_candidates": "AP2-012, CTK-007",
+   "note": "",
+   "default": {
+    "valid": false,
+    "errors": [
+     "L3a (payment) expired at 1792666396"
+    ],
+    "skipped": [
+     "l2_aud (no expected value provided)",
+     "l2_nonce (no expected value provided)"
+    ]
+   },
+   "hardened": {
+    "valid": false,
+    "errors": [
+     "L3a (payment) expired at 1792666396"
+    ],
+    "skipped": []
+   }
+  },
+  {
+   "case": "4.9 checkout and payment mandates bind different agent keys",
+   "vi_section": "4.9",
+   "spec_expectation": "reject (cnf.jwk must match)",
+   "harness_candidates": "CTK-001",
+   "note": "",
+   "default": {
+    "valid": false,
+    "errors": [
+     "L2 mandate cnf.jwk values must be identical across all pairs but differ"
+    ],
+    "skipped": [
+     "l2_aud (no expected value provided)",
+     "l2_nonce (no expected value provided)"
+    ]
+   },
+   "hardened": {
+    "valid": false,
+    "errors": [
+     "L2 mandate cnf.jwk values must be identical across all pairs but differ"
+    ],
+    "skipped": []
+   }
+  },
+  {
+   "case": "4.4c mismatch, merchant sees L3b only",
+   "vi_section": "4.4 / spec 8.4",
+   "spec_expectation": "each party verifies its own L3; cross-reference only when one verifier holds both",
+   "harness_candidates": "AP2-007",
+   "note": "merchant-role call with expected aud/nonce",
+   "default": {
+    "valid": "n/a"
+   },
+   "hardened": {
+    "valid": true,
+    "errors": []
+   }
+  }
+ ]
+}
